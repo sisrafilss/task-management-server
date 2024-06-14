@@ -15,7 +15,7 @@ function createToken(user) {
       email: user.email,
     },
     "secret",
-    { expiresIn: "7d" }
+    { expiresIn: "100d" }
   );
 
   return token;
@@ -74,9 +74,14 @@ async function run() {
       await userCollection.insertOne(userData);
       res.send({ token });
     });
+    app.get("/user/:email", async (req, res) => {
+      const email = req.params.email;
+      const result = await userCollection.findOne({ email });
+      res.send(result);
+    });
 
      // tasks routes | 
-     app.post("/tasks", verifyToken, async (req, res) => {
+     app.post("/tasks", async (req, res) => {
       const taskData = req.body;
       const result = await tasksCollection.insertOne(taskData);
       res.send(result);
@@ -84,6 +89,23 @@ async function run() {
     app.get("/tasks", async (req, res) => {
       const tasksData = tasksCollection.find();
       const result = await tasksData.toArray();
+      res.send(result);
+    });
+
+    app.patch("/tasks/:id", async (req, res) => {
+      const id = req.params.id;
+      const updatedData = req.body;
+      console.log("updated data", updatedData);
+      const result = await tasksCollection.updateOne(
+        { _id: new ObjectId(id) },
+        { $set: updatedData }
+      );
+      res.send(result);
+    });
+
+    app.delete("/tasks/:id", async (req, res) => {
+      const id = req.params.id;
+      const result = await tasksCollection.deleteOne({ _id: new ObjectId(id) });
       res.send(result);
     });
 
