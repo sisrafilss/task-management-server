@@ -45,7 +45,9 @@ async function run() {
     await client.connect();
 
     const usersDB = client.db("TaskManagerUsersDB");
+    const tasksDB = client.db("TaskManagerTasksDB");
     const userCollection = usersDB.collection("userCollection");
+    const tasksCollection = tasksDB.collection("tasksCollection");
 
 
     // user routes
@@ -71,6 +73,18 @@ async function run() {
       }
       await userCollection.insertOne(userData);
       res.send({ token });
+    });
+
+     // tasks routes | 
+     app.post("/tasks", verifyToken, async (req, res) => {
+      const taskData = req.body;
+      const result = await tasksCollection.insertOne(taskData);
+      res.send(result);
+    });
+    app.get("/tasks", async (req, res) => {
+      const tasksData = tasksCollection.find();
+      const result = await tasksData.toArray();
+      res.send(result);
     });
 
 
